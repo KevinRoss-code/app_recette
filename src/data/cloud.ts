@@ -1,8 +1,18 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Backend, LigneDistante } from './sync'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const cle = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+export function normaliserUrl(brute?: string): string | undefined {
+  const t = brute?.trim()
+  if (!t) return undefined
+  try {
+    return new URL(/^https?:\/\//i.test(t) ? t : `https://${t}`).origin
+  } catch {
+    return undefined
+  }
+}
+
+const url = normaliserUrl(import.meta.env.VITE_SUPABASE_URL as string | undefined)
+const cle = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim()
 
 export const cloudConfigure = Boolean(url && cle)
 export const supabase: SupabaseClient | null = cloudConfigure ? createClient(url!, cle!) : null

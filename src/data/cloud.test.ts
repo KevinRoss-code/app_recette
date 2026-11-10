@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { describe, expect, test } from 'vitest'
-import { backendSupabase } from './cloud'
+import { backendSupabase, normaliserUrl } from './cloud'
 
 function faux(total: number) {
   const appels = { gte: [] as string[], rpc: [] as { fn: string; n: number }[] }
@@ -37,4 +37,15 @@ describe('backendSupabase', () => {
     await backendSupabase(client).push(lignes)
     expect(appels.rpc).toEqual([{ fn: 'push_rows', n: 200 }, { fn: 'push_rows', n: 200 }, { fn: 'push_rows', n: 50 }])
   })
+})
+
+describe('normaliserUrl', () => {
+  test.each([
+    ['https://abc.supabase.co', 'https://abc.supabase.co'],
+    ['https://abc.supabase.co/', 'https://abc.supabase.co'],
+    ['https://abc.supabase.co/rest/v1/', 'https://abc.supabase.co'],
+    ['  https://abc.supabase.co/auth/v1  \n', 'https://abc.supabase.co'],
+    ['abc.supabase.co', 'https://abc.supabase.co'],
+  ])('%j -> %s', (entree, attendu) => expect(normaliserUrl(entree)).toBe(attendu))
+  test.each([[undefined], [''], ['   '], ['http://']])('%j -> non configuré', (entree) => expect(normaliserUrl(entree)).toBeUndefined())
 })
