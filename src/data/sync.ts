@@ -68,3 +68,8 @@ export async function synchroniser(backend: Backend, base: CarnetDb = dbParDefau
   await base.meta.put({ cle: 'derniereSynchro', valeur: now() })
   return { recues, envoyees: aEnvoyer.length }
 }
+
+/** Oublie la mémoire de synchro : le prochain passage renvoie tout et relit tout (sans risque, la plus récente gagne). */
+export async function reinitialiserSynchro(base: CarnetDb = dbParDefaut): Promise<void> {
+  await base.meta.bulkDelete(['curseur', 'dernierPush'])
+}

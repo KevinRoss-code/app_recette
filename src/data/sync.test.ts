@@ -2,7 +2,7 @@
 import Dexie from 'dexie'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { CarnetDb } from './db'
-import { synchroniser, type Backend, type LigneDistante } from './sync'
+import { reinitialiserSynchro, synchroniser, type Backend, type LigneDistante } from './sync'
 import type { Recette } from '../domain/types'
 
 class FauxServeur implements Backend {
@@ -85,6 +85,15 @@ describe('synchroniser', () => {
     const bilan = await synchroniser(serveur, A, () => (tA += 5000))
     expect(bilan.envoyees).toBe(0)
     expect(await A.recettes.count()).toBe(1)
+  })
+  test('réinitialiser la synchro renvoie tout, même ce qui est plus ancien que le dernier envoi', async () => {
+    await A.recettes.add(recette('r1', 'Gratin', 500))
+    await syncA()
+    serveur.lignes.clear()
+    expect((await synchroniser(serveur, A, () => (tA += 5000))).envoyees).toBe(0)
+    await reinitialiserSynchro(A)
+    expect((await synchroniser(serveur, A, () => (tA += 5000))).envoyees).toBe(1)
+    expect(serveur.lignes.size).toBe(1)
   })
   test('une panne réseau ne perd rien et le prochain essai envoie tout', async () => {
     await A.recettes.add(recette('r1', 'Gratin', 1500))

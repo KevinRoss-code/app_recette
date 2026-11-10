@@ -56,6 +56,7 @@ export default function Compte() {
           <p>Connecté en tant que <strong>{cloud.email}</strong></p>
           <div className="actions">
             <button className="primary" disabled={cloud.etat === 'synchro'} onClick={() => void cloud.synchroniserMaintenant()}>Synchroniser maintenant</button>
+            <button disabled={cloud.etat === 'synchro'} onClick={() => void cloud.synchroniserMaintenant(true)}>Tout renvoyer (réparation)</button>
             <button className="danger" onClick={() => void cloud.deconnecter()}>Se déconnecter</button>
           </div>
           <p className="meta">Vos recettes restent aussi sur cet appareil après déconnexion.</p>

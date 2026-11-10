@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import type { Session } from '@supabase/supabase-js'
 import { backendSupabase, cloudConfigure, supabase } from '../data/cloud'
 import { db } from '../data/db'
-import { applicationEnCours, synchroniser, type Bilan } from '../data/sync'
+import { applicationEnCours, reinitialiserSynchro, synchroniser, type Bilan } from '../data/sync'
 
 export type EtatCloud = 'non-configure' | 'deconnecte' | 'repos' | 'synchro' | 'ok' | 'hors-ligne' | 'erreur'
 
@@ -12,7 +12,7 @@ interface Cloud {
   derniere: number | null
   bilan: Bilan | null
   message: string
-  synchroniserMaintenant: () => Promise<void>
+  synchroniserMaintenant: (toutRenvoyer?: boolean) => Promise<void>
   connecter: (email: string, mdp: string) => Promise<void>
   creerCompte: (email: string, mdp: string) => Promise<void>
   deconnecter: () => Promise<void>
@@ -33,15 +33,21 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const enCours = useRef(false)
   const relance = useRef(false)
   const minuteur = useRef<ReturnType<typeof setTimeout>>()
-  const connecte = Boolean(session)
+  const userId = session?.user.id
+  const connecte = Boolean(userId)
 
-  const synchroniserMaintenant = useCallback(async () => {
+  const synchroniserMaintenant = useCallback(async (toutRenvoyer = false) => {
     if (!supabase || !connecte) return
     if (!navigator.onLine) return setEtat('hors-ligne')
     if (enCours.current) { relance.current = true; return }
     enCours.current = true
     setEtat('synchro')
     try {
+      const dernierUtilisateur = (await db.meta.get('utilisateur'))?.valeur
+      if (toutRenvoyer || dernierUtilisateur !== userId) {
+        await reinitialiserSynchro()
+        await db.meta.put({ cle: 'utilisateur', valeur: userId })
+      }
       setBilan(await synchroniser(backendSupabase(supabase)))
       setEtat('ok')
       setMessage('')
@@ -53,7 +59,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       enCours.current = false
       if (relance.current) { relance.current = false; void synchroniserMaintenant() }
     }
-  }, [connecte])
+  }, [connecte, userId])
 
   useEffect(() => {
     if (!supabase) return
