@@ -9,3 +9,4 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
 button, .btn { padding: 8px 12px; cursor: pointer; }
 button[aria-pressed='true'] { background: #2e7d32; color: #fff; }
 .err { color: #b00020; }
+.lien { background: none; border: 0; padding: 0; text-align: left; font: inherit; color: #1b5e20; text-decoration: underline; cursor: pointer; }

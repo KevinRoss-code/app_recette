@@ -3,7 +3,7 @@ import { lister } from '../data/recettes'
 import { ajouterAuMenu, changerPortions, lireMenu, retirerDuMenu, viderMenu, type LigneMenu } from '../data/menu'
 import type { Recette } from '../domain/types'
 
-export default function Menu() {
+export default function Menu({ onVoir }: { onVoir: (r: Recette, portions: number) => void }) {
   const lignes = useLiveQuery(lireMenu, [], [] as LigneMenu[])
   const recettes = useLiveQuery(lister, [], [] as Recette[])
   const horsMenu = recettes.filter((r) => !lignes.some((l) => l.recetteId === r.id))
@@ -14,7 +14,7 @@ export default function Menu() {
       <ul className="liste">
         {lignes.map((l) => (
           <li key={l.id}>
-            <strong>{l.recette.titre}</strong>
+            <button className="lien" onClick={() => onVoir(l.recette, l.portions)}><strong>{l.recette.titre}</strong></button>
             <span className="row">
               <button aria-label={`Moins de portions ${l.recette.titre}`} disabled={l.portions <= 1} onClick={() => changerPortions(l.id!, l.portions - 1)}>−</button>
               <span>{l.portions} pers.</span>

@@ -5,7 +5,7 @@ import { remplacerMenu } from '../data/menu'
 import { relancer, tirer } from '../domain/tirage'
 import type { Recette } from '../domain/types'
 
-export default function Tirage() {
+export default function Tirage({ onVoir }: { onVoir: (r: Recette) => void }) {
   const recettes = useLiveQuery(lister, [], [] as Recette[])
   const [nombre, setNombre] = useState(4)
   const [tagsSel, setTagsSel] = useState<string[]>([])
@@ -36,7 +36,7 @@ export default function Tirage() {
       <ul className="liste">
         {selection.map((r) => (
           <li key={r.id}>
-            <strong>{r.titre}</strong>
+            <button className="lien" onClick={() => onVoir(r)}><strong>{r.titre}</strong></button>
             <button disabled={valide} onClick={() => setSelection(relancer(recettes, selection, r.id!, criteres))}>Relancer</button>
           </li>
         ))}

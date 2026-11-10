@@ -40,3 +40,6 @@ export function enTexte(lignes: LigneCourses[], coches: Set<string> = new Set())
     .map((g) => `${g.rayon}\n${g.lignes.map((l) => `- ${libelle(l)}`).join('\n')}`)
     .join('\n\n')
 }
+
+export const mettreALEchelle = (quantite: number, portionsRecette: number, portionsVoulues: number) =>
+  arrondi((quantite * portionsVoulues) / portionsRecette)

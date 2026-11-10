@@ -4,7 +4,7 @@ import { creer, exporterJson, importerJson, lister, modifier, supprimer } from '
 import type { Recette } from '../domain/types'
 import RecetteForm from './RecetteForm'
 
-export default function Recettes() {
+export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
   const recettes = useLiveQuery(lister, [], [] as Recette[])
   const [edition, setEdition] = useState<Recette | 'nouvelle' | null>(null)
   const [message, setMessage] = useState('')
@@ -50,7 +50,7 @@ export default function Recettes() {
       <ul className="liste">
         {recettes.map((r) => (
           <li key={r.id}>
-            <strong>{r.titre}</strong> <small>{r.tempsMinutes ? `${r.tempsMinutes} min · ` : ''}{r.portions} pers. {r.tags.map((t) => `#${t}`).join(' ')}</small>
+            <button className="lien" onClick={() => onVoir(r)}><strong>{r.titre}</strong></button> <small>{r.tempsMinutes ? `${r.tempsMinutes} min · ` : ''}{r.portions} pers. {r.tags.map((t) => `#${t}`).join(' ')}</small>
             <span className="row">
               <button onClick={() => setEdition(r)}>Modifier</button>
               <button onClick={() => confirm(`Supprimer « ${r.titre} » ?`) && supprimer(r.id!)}>Supprimer</button>

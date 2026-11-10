@@ -54,3 +54,9 @@ describe('parRayon / texte', () => {
     expect(enTexte(lignes, coches)).toBe('Fruits et légumes\n- 1 ail\n- 2 tomate')
   })
 })
+
+import { mettreALEchelle } from './courses'
+test('mettreALEchelle', () => {
+  expect(mettreALEchelle(100, 2, 5)).toBe(250)
+  expect(mettreALEchelle(1, 3, 1)).toBe(0.33)
+})

@@ -79,3 +79,32 @@ test('courses : ingrédients du menu agrégés par rayon, cases à cocher, ajout
   fireEvent.click(screen.getByText('Ajouter'))
   await screen.findByText('1 article(s) restant(s) sur 2')
 })
+
+test('fiche recette : étapes visibles, quantités selon les portions, depuis la liste et le menu', async () => {
+  await creer({
+    titre: 'Crêpes', portions: 2, tags: [], etapes: ['Mélanger', 'Cuire à la poêle'],
+    ingredients: [{ nom: 'farine', quantite: 100, unite: 'g', rayon: 'Épicerie' }],
+  })
+  render(<App />)
+  fireEvent.click(screen.getByText('Recettes'))
+  fireEvent.click(await screen.findByText('Crêpes'))
+  await screen.findByText('Cuire à la poêle')
+  await screen.findByText('100 g farine')
+  fireEvent.click(screen.getByLabelText('Plus de portions'))
+  await screen.findByText('150 g farine')
+  fireEvent.click(screen.getByText('← Retour'))
+  await screen.findByText('+ Nouvelle recette')
+
+  fireEvent.click(screen.getByText('Tirage'))
+  await waitFor(() => {
+    fireEvent.click(screen.getByText(/Tirer/))
+    expect(screen.getByText('Valider : en faire le menu')).toBeTruthy()
+  })
+  fireEvent.click(screen.getByText('Valider : en faire le menu'))
+  await screen.findByText(/Menu enregistré/)
+  fireEvent.click(screen.getByText('Menu'))
+  await waitFor(() => {
+    fireEvent.click(screen.getByText('Crêpes'))
+    expect(screen.getByText('100 g farine')).toBeTruthy()
+  })
+})
