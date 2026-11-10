@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import type { Session } from '@supabase/supabase-js'
 import { backendSupabase, cloudConfigure, supabase } from '../data/cloud'
 import { db } from '../data/db'
-import { applicationEnCours, synchroniser } from '../data/sync'
+import { applicationEnCours, synchroniser, type Bilan } from '../data/sync'
 
 export type EtatCloud = 'non-configure' | 'deconnecte' | 'repos' | 'synchro' | 'ok' | 'hors-ligne' | 'erreur'
 
@@ -10,6 +10,7 @@ interface Cloud {
   etat: EtatCloud
   email?: string
   derniere: number | null
+  bilan: Bilan | null
   message: string
   synchroniserMaintenant: () => Promise<void>
   connecter: (email: string, mdp: string) => Promise<void>
@@ -27,6 +28,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [etat, setEtat] = useState<EtatCloud>(cloudConfigure ? 'deconnecte' : 'non-configure')
   const [derniere, setDerniere] = useState<number | null>(null)
+  const [bilan, setBilan] = useState<Bilan | null>(null)
   const [message, setMessage] = useState('')
   const enCours = useRef(false)
   const relance = useRef(false)
@@ -40,7 +42,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     enCours.current = true
     setEtat('synchro')
     try {
-      await synchroniser(backendSupabase(supabase))
+      setBilan(await synchroniser(backendSupabase(supabase)))
       setEtat('ok')
       setMessage('')
       setDerniere(Date.now())
@@ -101,7 +103,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Ctx.Provider value={{ etat, email: session?.user.email, derniere, message, synchroniserMaintenant, connecter, creerCompte, deconnecter }}>
+    <Ctx.Provider value={{ etat, email: session?.user.email, derniere, bilan, message, synchroniserMaintenant, connecter, creerCompte, deconnecter }}>
       {children}
     </Ctx.Provider>
   )

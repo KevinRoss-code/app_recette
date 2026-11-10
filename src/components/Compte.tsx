@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { lister } from '../data/recettes'
 import { useCloud, type EtatCloud } from './CloudProvider'
 
 const LIBELLES: Record<EtatCloud, string> = {
@@ -17,6 +19,7 @@ export default function Compte() {
   const [mdp, setMdp] = useState('')
   const [erreur, setErreur] = useState('')
   const [occupe, setOccupe] = useState(false)
+  const nbRecettes = useLiveQuery(async () => (await lister()).length, [], 0)
 
   async function agir(action: (e: string, m: string) => Promise<void>) {
     setErreur('')
@@ -44,6 +47,10 @@ export default function Compte() {
       <h2>Compte et synchronisation</h2>
       <p className="meta" role="status">{LIBELLES[cloud.etat]}{cloud.derniere ? ` · ${new Date(cloud.derniere).toLocaleTimeString('fr-FR')}` : ''}</p>
       {cloud.message && <p className="err">{cloud.message}</p>}
+      <p className="meta">
+        Sur cet appareil : {nbRecettes} recette(s).
+        {cloud.bilan ? ` Dernière synchro : ${cloud.bilan.recues} reçue(s), ${cloud.bilan.envoyees} envoyée(s).` : ''}
+      </p>
       {cloud.email ? (
         <div className="carte">
           <p>Connecté en tant que <strong>{cloud.email}</strong></p>
@@ -64,6 +71,7 @@ export default function Compte() {
           </div>
         </form>
       )}
+      <p className="meta">Version {__BUILD__}</p>
     </section>
   )
 }
