@@ -35,40 +35,50 @@ export default function Courses() {
   }
 
   const restants = lignes.filter((l) => !coches.has(l.cle)).length
+  const pct = lignes.length ? Math.round(((lignes.length - restants) / lignes.length) * 100) : 0
 
   return (
     <section>
-      {lignes.length === 0 && <p>Liste vide : validez un menu ou ajoutez un article.</p>}
-      {lignes.length > 0 && <p>{restants} article(s) restant(s) sur {lignes.length}</p>}
+      <h2>Liste de courses</h2>
+      {lignes.length === 0 && <div className="vide"><span>🛒</span>Liste vide : validez un menu ou ajoutez un article.</div>}
+      {lignes.length > 0 && (
+        <>
+          <p className="meta">{restants} article(s) restant(s) sur {lignes.length}</p>
+          <div className="progres" role="progressbar" aria-label="Avancement des courses" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
+            <div style={{ width: `${pct}%` }} />
+          </div>
+        </>
+      )}
       {parRayon(lignes).map((g) => (
         <div key={g.rayon}>
           <h3>{g.rayon}</h3>
           <ul className="liste">
             {g.lignes.map((l) => (
               <li key={l.cle}>
-                <label style={{ textDecoration: coches.has(l.cle) ? 'line-through' : undefined }}>
+                <label className={`courses-item${coches.has(l.cle) ? ' fait' : ''}`}>
                   <input type="checkbox" checked={coches.has(l.cle)} onChange={(e) => cocher(l.cle, e.target.checked)} /> {libelle(l)}
                 </label>
-                {l.manuel && <button aria-label={`Retirer ${l.nom}`} onClick={() => retirerArticle(l.nom, l.unite)}>✕</button>}
+                {l.manuel && <button className="petit danger" aria-label={`Retirer ${l.nom}`} onClick={() => retirerArticle(l.nom, l.unite)}>✕</button>}
               </li>
             ))}
           </ul>
         </div>
       ))}
-      <form className="row" onSubmit={ajouter}>
+      <h3>Ajouter un article</h3>
+      <form className="carte ajout" onSubmit={ajouter}>
         <input placeholder="Article" value={nom} onChange={(e) => setNom(e.target.value)} />
-        <input className="num" type="number" min={0} step="any" value={quantite} onChange={(e) => setQuantite(Number(e.target.value))} />
-        <input className="num" placeholder="unité" value={unite} onChange={(e) => setUnite(e.target.value)} />
+        <input type="number" min={0} step="any" aria-label="Quantité" value={quantite} onChange={(e) => setQuantite(Number(e.target.value))} />
+        <input placeholder="unité" value={unite} onChange={(e) => setUnite(e.target.value)} />
         <select aria-label="Rayon" value={rayon} onChange={(e) => setRayon(e.target.value as Rayon)}>
           {RAYONS.map((r) => <option key={r}>{r}</option>)}
         </select>
-        <button type="submit">Ajouter</button>
+        <button className="primary" type="submit">Ajouter</button>
       </form>
-      <div className="row">
+      <div className="actions">
         {lignes.length > 0 && <button onClick={copier}>Copier la liste</button>}
-        <button onClick={() => confirm('Décocher tout et supprimer les articles ajoutés à la main ?') && nouvelleListe()}>Nouvelle liste</button>
+        <button className="danger" onClick={() => confirm('Décocher tout et supprimer les articles ajoutés à la main ?') && nouvelleListe()}>Nouvelle liste</button>
       </div>
-      {message && <p>{message}</p>}
+      {message && <p className="meta" role="status">{message}</p>}
     </section>
   )
 }

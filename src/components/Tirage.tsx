@@ -18,33 +18,45 @@ export default function Tirage({ onVoir }: { onVoir: (r: Recette) => void }) {
 
   return (
     <section>
-      <div className="row">
-        <label>Nombre <input type="number" min={1} max={14} value={nombre} onChange={(e) => setNombre(Number(e.target.value))} /></label>
-        <label>Temps max (min) <input type="number" min={0} value={tempsMax} onChange={(e) => setTempsMax(e.target.value)} /></label>
-      </div>
-      {tousTags.length > 0 && (
-        <div className="row">
-          {tousTags.map((t) => (
-            <label key={t}>
-              <input type="checkbox" checked={tagsSel.includes(t)} onChange={(e) => setTagsSel(e.target.checked ? [...tagsSel, t] : tagsSel.filter((x) => x !== t))} /> {t}
-            </label>
-          ))}
+      <h2>Que mange-t-on ?</h2>
+      <div className="carte">
+        <div className="reglages">
+          <label>Nombre <input type="number" min={1} max={14} value={nombre} onChange={(e) => setNombre(Number(e.target.value))} /></label>
+          <label>Temps max (min) <input type="number" min={0} value={tempsMax} onChange={(e) => setTempsMax(e.target.value)} /></label>
         </div>
-      )}
-      <button onClick={() => { setSelection(tirer(recettes, { nombre, ...criteres })); setValide(false) }}>🎲 Tirer</button>
-      {selection.length > 0 && selection.length < nombre && <p>Seulement {selection.length} recette(s) correspondent.</p>}
+        {tousTags.length > 0 && (
+          <div className="chips">
+            {tousTags.map((t) => (
+              <label className="chip" key={t}>
+                <input type="checkbox" checked={tagsSel.includes(t)} onChange={(e) => setTagsSel(e.target.checked ? [...tagsSel, t] : tagsSel.filter((x) => x !== t))} />
+                {t}
+              </label>
+            ))}
+          </div>
+        )}
+        <div className="actions">
+          <button className="primary" onClick={() => { setSelection(tirer(recettes, { nombre, ...criteres })); setValide(false) }}>🎲 Tirer</button>
+        </div>
+      </div>
+      {recettes.length === 0 && <div className="vide"><span>🍳</span>Ajoutez d'abord des recettes dans l'onglet Recettes.</div>}
+      {selection.length > 0 && selection.length < nombre && <p className="meta">Seulement {selection.length} recette(s) correspondent.</p>}
       <ul className="liste">
         {selection.map((r) => (
           <li key={r.id}>
-            <button className="lien" onClick={() => onVoir(r)}><strong>{r.titre}</strong></button>
-            <button disabled={valide} onClick={() => setSelection(relancer(recettes, selection, r.id!, criteres))}>Relancer</button>
+            <span>
+              <button className="lien" onClick={() => onVoir(r)}><strong>{r.titre}</strong></button>
+              <span className="meta">{r.tempsMinutes ? `${r.tempsMinutes} min · ` : ''}{r.portions} pers.</span>
+            </span>
+            <button className="petit" disabled={valide} onClick={() => setSelection(relancer(recettes, selection, r.id!, criteres))}>Relancer</button>
           </li>
         ))}
       </ul>
       {selection.length > 0 && (
-        <button disabled={valide} onClick={async () => { await marquerTirees(selection.map((r) => r.id!)); await remplacerMenu(selection); setValide(true) }}>
-          {valide ? 'Menu enregistré ✓' : 'Valider : en faire le menu'}
-        </button>
+        <div className="actions">
+          <button className="primary" disabled={valide} onClick={async () => { await marquerTirees(selection.map((r) => r.id!)); await remplacerMenu(selection); setValide(true) }}>
+            {valide ? 'Menu enregistré ✓' : 'Valider : en faire le menu'}
+          </button>
+        </div>
       )}
     </section>
   )

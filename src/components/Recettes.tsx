@@ -40,20 +40,24 @@ export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
 
   return (
     <section>
-      <div className="row">
-        <button onClick={() => setEdition('nouvelle')}>+ Nouvelle recette</button>
-        <button onClick={exporter}>Exporter</button>
-        <label className="btn">Importer<input type="file" accept="application/json" hidden onChange={(e) => importer(e.target.files?.[0])} /></label>
+      <h2>Mes recettes</h2>
+      <div className="actions">
+        <button className="primary" onClick={() => setEdition('nouvelle')}>+ Nouvelle recette</button>
+        <button className="petit" onClick={exporter}>Exporter</button>
+        <label className="btn petit">Importer<input type="file" accept="application/json" hidden onChange={(e) => importer(e.target.files?.[0])} /></label>
       </div>
-      {message && <p>{message}</p>}
-      {recettes.length === 0 && <p>Aucune recette : ajoutez-en une pour commencer.</p>}
+      {message && <p className="meta" role="status">{message}</p>}
+      {recettes.length === 0 && <div className="vide"><span>📖</span>Aucune recette : ajoutez-en une pour commencer.</div>}
       <ul className="liste">
         {recettes.map((r) => (
           <li key={r.id}>
-            <button className="lien" onClick={() => onVoir(r)}><strong>{r.titre}</strong></button> <small>{r.tempsMinutes ? `${r.tempsMinutes} min · ` : ''}{r.portions} pers. {r.tags.map((t) => `#${t}`).join(' ')}</small>
+            <span>
+              <button className="lien" onClick={() => onVoir(r)}><strong>{r.titre}</strong></button>
+              <span className="meta">{r.tempsMinutes ? `${r.tempsMinutes} min · ` : ''}{r.portions} pers. {r.tags.map((t) => `#${t}`).join(' ')}</span>
+            </span>
             <span className="row">
-              <button onClick={() => setEdition(r)}>Modifier</button>
-              <button onClick={() => confirm(`Supprimer « ${r.titre} » ?`) && supprimer(r.id!)}>Supprimer</button>
+              <button className="petit" onClick={() => setEdition(r)}>Modifier</button>
+              <button className="petit danger" onClick={() => confirm(`Supprimer « ${r.titre} » ?`) && supprimer(r.id!)}>Supprimer</button>
             </span>
           </li>
         ))}

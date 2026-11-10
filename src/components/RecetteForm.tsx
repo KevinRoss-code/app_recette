@@ -40,6 +40,7 @@ export default function RecetteForm({ initiale, onSubmit, onAnnuler }: Props) {
 
   return (
     <form onSubmit={envoyer} className="form">
+      <h2>{initiale ? 'Modifier la recette' : 'Nouvelle recette'}</h2>
       <label>Titre <input value={titre} onChange={(e) => setTitre(e.target.value)} required /></label>
       <div className="row">
         <label>Portions <input type="number" min={1} value={portions} onChange={(e) => setPortions(Number(e.target.value))} /></label>
@@ -49,22 +50,22 @@ export default function RecetteForm({ initiale, onSubmit, onAnnuler }: Props) {
       <fieldset>
         <legend>Ingrédients</legend>
         {ings.map((ing, i) => (
-          <div className="row" key={i}>
+          <div className="ing" key={i}>
             <input placeholder="Nom" value={ing.nom} onChange={(e) => majIng(i, { nom: e.target.value })} />
-            <input className="num" type="number" min={0} step="any" value={ing.quantite} onChange={(e) => majIng(i, { quantite: Number(e.target.value) })} />
-            <input className="num" placeholder="unité" value={ing.unite} onChange={(e) => majIng(i, { unite: e.target.value })} />
+            <input type="number" min={0} step="any" aria-label="Quantité" value={ing.quantite} onChange={(e) => majIng(i, { quantite: Number(e.target.value) })} />
+            <input placeholder="unité" value={ing.unite} onChange={(e) => majIng(i, { unite: e.target.value })} />
             <select value={ing.rayon} onChange={(e) => majIng(i, { rayon: e.target.value as Ingredient['rayon'] })}>
               {RAYONS.map((r) => <option key={r}>{r}</option>)}
             </select>
-            <button type="button" aria-label="Retirer" onClick={() => setIngs(ings.filter((_, k) => k !== i))}>✕</button>
+            <button type="button" className="petit danger" aria-label="Retirer" onClick={() => setIngs(ings.filter((_, k) => k !== i))}>✕</button>
           </div>
         ))}
-        <button type="button" onClick={() => setIngs([...ings, { ...vide }])}>+ Ingrédient</button>
+        <button type="button" className="petit" onClick={() => setIngs([...ings, { ...vide }])}>+ Ingrédient</button>
       </fieldset>
       <label>Étapes (une par ligne) <textarea rows={5} value={etapes} onChange={(e) => setEtapes(e.target.value)} /></label>
       {erreur && <p role="alert" className="err">{erreur}</p>}
-      <div className="row">
-        <button type="submit">Enregistrer</button>
+      <div className="actions">
+        <button type="submit" className="primary">Enregistrer</button>
         <button type="button" onClick={onAnnuler}>Annuler</button>
       </div>
     </form>
