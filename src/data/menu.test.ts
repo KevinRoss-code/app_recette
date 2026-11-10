@@ -47,6 +47,6 @@ describe('menu', () => {
     await remplacerMenu([a, b])
     await supprimer(a.id!)
     expect((await lireMenu()).map((l) => l.recette.titre)).toEqual(['B'])
-    expect(await db.menu.count()).toBe(1)
+    expect(await db.menu.filter((m) => !m.deletedAt).count()).toBe(1)
   })
 })

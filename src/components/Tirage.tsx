@@ -47,13 +47,13 @@ export default function Tirage({ onVoir }: { onVoir: (r: Recette) => void }) {
               <button className="lien" onClick={() => onVoir(r)}><strong>{r.titre}</strong></button>
               <span className="meta">{r.tempsMinutes ? `${r.tempsMinutes} min · ` : ''}{r.portions} pers.</span>
             </span>
-            <button className="petit" disabled={valide} onClick={() => setSelection(relancer(recettes, selection, r.id!, criteres))}>Relancer</button>
+            <button className="petit" disabled={valide} onClick={() => setSelection(relancer(recettes, selection, r.id, criteres))}>Relancer</button>
           </li>
         ))}
       </ul>
       {selection.length > 0 && (
         <div className="actions">
-          <button className="primary" disabled={valide} onClick={async () => { await marquerTirees(selection.map((r) => r.id!)); await remplacerMenu(selection); setValide(true) }}>
+          <button className="primary" disabled={valide} onClick={async () => { await marquerTirees(selection.map((r) => r.id)); await remplacerMenu(selection); setValide(true) }}>
             {valide ? 'Menu enregistré ✓' : 'Valider : en faire le menu'}
           </button>
         </div>

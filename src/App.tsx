@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { CloudProvider } from './components/CloudProvider'
+import Compte from './components/Compte'
 import Courses from './components/Courses'
-import { IconCourses, IconMenu, IconRecettes, IconTirage } from './components/Icons'
+import { IconCompte, IconCourses, IconMenu, IconRecettes, IconTirage } from './components/Icons'
 import Menu from './components/Menu'
 import RecetteDetail from './components/RecetteDetail'
 import Recettes from './components/Recettes'
@@ -12,6 +14,7 @@ const ONGLETS = {
   menu: { titre: 'Menu', Icone: IconMenu },
   courses: { titre: 'Courses', Icone: IconCourses },
   recettes: { titre: 'Recettes', Icone: IconRecettes },
+  compte: { titre: 'Compte', Icone: IconCompte },
 } as const
 type Onglet = keyof typeof ONGLETS
 
@@ -21,7 +24,7 @@ export default function App() {
   const voir = (recette: Recette, portions?: number) => setOuverte({ recette, portions })
 
   return (
-    <>
+    <CloudProvider>
       <header className="app-header"><h1>Carnet de recettes</h1></header>
       <nav className="nav" aria-label="Navigation principale">
         {(Object.keys(ONGLETS) as Onglet[]).map((o) => {
@@ -43,10 +46,12 @@ export default function App() {
           <Menu onVoir={voir} />
         ) : onglet === 'courses' ? (
           <Courses />
+        ) : onglet === 'compte' ? (
+          <Compte />
         ) : (
           <Recettes onVoir={voir} />
         )}
       </main>
-    </>
+    </CloudProvider>
   )
 }

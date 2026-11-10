@@ -3,7 +3,7 @@ import { agreger, cleArticle, enTexte, libelle, parRayon } from './courses'
 import type { Ingredient, Recette } from './types'
 
 const ing = (nom: string, quantite: number, unite = 'g', rayon: Ingredient['rayon'] = 'Épicerie'): Ingredient => ({ nom, quantite, unite, rayon })
-const rec = (portions: number, ingredients: Ingredient[]): Recette => ({ id: 1, titre: 'R', portions, ingredients, etapes: [], tags: [] })
+const rec = (portions: number, ingredients: Ingredient[]): Recette => ({ id: 'r1', titre: 'R', portions, ingredients, etapes: [], tags: [], updatedAt: 0 })
 
 describe('agreger', () => {
   test('additionne même nom + unité entre recettes', () => {

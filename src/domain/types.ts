@@ -4,6 +4,11 @@ export const RAYONS = [
 ] as const
 export type Rayon = (typeof RAYONS)[number]
 
+export interface Synchro {
+  updatedAt: number
+  deletedAt?: number
+}
+
 export interface Ingredient {
   nom: string
   quantite: number
@@ -11,8 +16,8 @@ export interface Ingredient {
   rayon: Rayon
 }
 
-export interface Recette {
-  id?: number
+export interface Recette extends Synchro {
+  id: string
   titre: string
   portions: number
   ingredients: Ingredient[]
@@ -22,14 +27,19 @@ export interface Recette {
   dernierTirage?: number
 }
 
-export type NouvelleRecette = Omit<Recette, 'id'>
+export type NouvelleRecette = Omit<Recette, 'id' | 'updatedAt' | 'deletedAt'>
 
-export interface MenuItem {
-  id?: number
-  recetteId: number
+export interface MenuItem extends Synchro {
+  id: string
+  recetteId: string
   portions: number
+  ordre: number
 }
 
-export interface ArticleManuel extends Ingredient {
-  id?: number
+export interface Coche extends Synchro {
+  cle: string
+}
+
+export interface ArticleManuel extends Ingredient, Synchro {
+  id: string
 }

@@ -17,10 +17,10 @@ export default function Menu({ onVoir }: { onVoir: (r: Recette, portions: number
           <li key={l.id}>
             <button className="lien" onClick={() => onVoir(l.recette, l.portions)}><strong>{l.recette.titre}</strong></button>
             <span className="stepper">
-              <button className="rond" aria-label={`Moins de portions ${l.recette.titre}`} disabled={l.portions <= 1} onClick={() => changerPortions(l.id!, l.portions - 1)}>−</button>
+              <button className="rond" aria-label={`Moins de portions ${l.recette.titre}`} disabled={l.portions <= 1} onClick={() => changerPortions(l.id, l.portions - 1)}>−</button>
               <span>{l.portions} pers.</span>
-              <button className="rond" aria-label={`Plus de portions ${l.recette.titre}`} onClick={() => changerPortions(l.id!, l.portions + 1)}>+</button>
-              <button className="petit danger" onClick={() => retirerDuMenu(l.id!)}>Retirer</button>
+              <button className="rond" aria-label={`Plus de portions ${l.recette.titre}`} onClick={() => changerPortions(l.id, l.portions + 1)}>+</button>
+              <button className="petit danger" onClick={() => retirerDuMenu(l.id)}>Retirer</button>
             </span>
           </li>
         ))}
@@ -28,7 +28,7 @@ export default function Menu({ onVoir }: { onVoir: (r: Recette, portions: number
       <div className="actions">
         {horsMenu.length > 0 && (
           <select aria-label="Ajouter une recette" value="" onChange={(e) => {
-            const r = horsMenu.find((x) => x.id === Number(e.target.value))
+            const r = horsMenu.find((x) => x.id === e.target.value)
             if (r) ajouterAuMenu(r)
           }}>
             <option value="">+ Ajouter une recette…</option>

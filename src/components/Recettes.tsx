@@ -31,7 +31,7 @@ export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
         onAnnuler={() => setEdition(null)}
         onSubmit={async (r) => {
           if (edition === 'nouvelle') await creer(r)
-          else await modifier(edition.id!, r)
+          else await modifier(edition.id, r)
           setEdition(null)
         }}
       />
@@ -57,7 +57,7 @@ export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
             </span>
             <span className="row">
               <button className="petit" onClick={() => setEdition(r)}>Modifier</button>
-              <button className="petit danger" onClick={() => confirm(`Supprimer « ${r.titre} » ?`) && supprimer(r.id!)}>Supprimer</button>
+              <button className="petit danger" onClick={() => confirm(`Supprimer « ${r.titre} » ?`) && supprimer(r.id)}>Supprimer</button>
             </span>
           </li>
         ))}

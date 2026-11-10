@@ -8,7 +8,7 @@ const base: NouvelleRecette = {
   ingredients: [{ nom: 'pâtes', quantite: 200, unite: 'g', rayon: 'Épicerie' }],
 }
 
-beforeEach(() => db.recettes.clear())
+beforeEach(() => Promise.all([db.recettes.clear(), db.menu.clear()]))
 
 describe('recettes', () => {
   test('créer puis lire', async () => {
@@ -26,9 +26,11 @@ describe('recettes', () => {
     expect((await lire(id))?.titre).toBe('Autre')
     await supprimer(id)
     expect(await lire(id)).toBeUndefined()
+    expect(await lister()).toEqual([])
+    expect((await db.recettes.get(id))?.deletedAt).toBeTypeOf('number')
   })
   test('modifier une recette absente échoue', async () => {
-    await expect(modifier(999, base)).rejects.toThrow('introuvable')
+    await expect(modifier('absent', base)).rejects.toThrow('introuvable')
   })
   test('validation', async () => {
     await expect(creer({ ...base, titre: '  ' })).rejects.toThrow('Titre')

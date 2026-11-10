@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest'
 import { relancer, tirer } from './tirage'
 import type { Recette } from './types'
 
-const R = (id: number, extra: Partial<Recette> = {}): Recette => ({
-  id, titre: `R${id}`, portions: 2, ingredients: [], etapes: [], tags: [], ...extra,
+const R = (n: number, extra: Partial<Recette> = {}): Recette => ({
+  id: `r${n}`, titre: `R${n}`, portions: 2, ingredients: [], etapes: [], tags: [], updatedAt: 0, ...extra,
 })
 const seq = (...v: number[]) => { let i = 0; return () => v[i++ % v.length] }
 const NOW = 1_000_000_000_000
@@ -31,15 +31,15 @@ describe('tirer', () => {
       R(4, { tags: ['veggie', 'rapide'] }),
     ]
     const ids = tirer(rs, { nombre: 9, tags: ['veggie', 'rapide'], tempsMax: 30 }).map((r) => r.id).sort()
-    expect(ids).toEqual([1, 4])
+    expect(ids).toEqual(['r1', 'r4'])
   })
   test('exclut les ids demandés', () => {
-    expect(tirer([R(1), R(2)], { nombre: 2, exclureIds: [1] }).map((r) => r.id)).toEqual([2])
+    expect(tirer([R(1), R(2)], { nombre: 2, exclureIds: ['r1'] }).map((r) => r.id)).toEqual(['r2'])
   })
   test('privilégie les recettes non récentes', () => {
     const rs = [R(1, { dernierTirage: NOW - 1000 }), R(2), R(3, { dernierTirage: NOW - 30 * 86_400_000 })]
     const res = tirer(rs, { nombre: 2, maintenant: NOW })
-    expect(res.map((r) => r.id).sort()).toEqual([2, 3])
+    expect(res.map((r) => r.id).sort()).toEqual(['r2', 'r3'])
   })
   test('complète avec les récentes si besoin', () => {
     const rs = [R(1, { dernierTirage: NOW - 1000 }), R(2)]
@@ -50,11 +50,11 @@ describe('tirer', () => {
 describe('relancer', () => {
   test('remplace par une recette hors sélection', () => {
     const tout = [R(1), R(2), R(3)]
-    const res = relancer(tout, [tout[0], tout[1]], 1)
-    expect(res.map((r) => r.id)).toEqual([3, 2])
+    const res = relancer(tout, [tout[0], tout[1]], 'r1')
+    expect(res.map((r) => r.id)).toEqual(['r3', 'r2'])
   })
   test('garde la sélection si aucune remplaçante', () => {
     const tout = [R(1), R(2)]
-    expect(relancer(tout, tout, 1)).toEqual(tout)
+    expect(relancer(tout, tout, 'r1')).toEqual(tout)
   })
 })

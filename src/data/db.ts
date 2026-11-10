@@ -1,20 +1,20 @@
 import Dexie, { type Table } from 'dexie'
-import type { ArticleManuel, MenuItem, Recette } from '../domain/types'
+import type { ArticleManuel, Coche, MenuItem, Recette } from '../domain/types'
 
-class CarnetDb extends Dexie {
-  recettes!: Table<Recette, number>
-  menu!: Table<MenuItem, number>
-  coches!: Table<{ cle: string }, string>
-  articles!: Table<ArticleManuel, number>
-  constructor(nom = 'carnet-recettes') {
+export class CarnetDb extends Dexie {
+  recettes!: Table<Recette, string>
+  menu!: Table<MenuItem, string>
+  coches!: Table<Coche, string>
+  articles!: Table<ArticleManuel, string>
+  meta!: Table<{ cle: string; valeur: unknown }, string>
+  constructor(nom = 'carnet-v2') {
     super(nom)
-    this.version(1).stores({ recettes: '++id, titre, dernierTirage, *tags' })
-    this.version(2).stores({ recettes: '++id, titre, dernierTirage, *tags', menu: '++id, recetteId' })
-    this.version(3).stores({
-      recettes: '++id, titre, dernierTirage, *tags',
-      menu: '++id, recetteId',
-      coches: 'cle',
-      articles: '++id',
+    this.version(1).stores({
+      recettes: 'id, titre, dernierTirage, *tags, updatedAt',
+      menu: 'id, recetteId, updatedAt',
+      coches: 'cle, updatedAt',
+      articles: 'id, updatedAt',
+      meta: 'cle',
     })
   }
 }

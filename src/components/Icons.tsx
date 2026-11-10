@@ -12,3 +12,6 @@ export const IconCourses = () => (
 export const IconRecettes = () => (
   <svg {...base}><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z" /><path d="M4 21.5V4.5M9 7h7" /></svg>
 )
+export const IconCompte = () => (
+  <svg {...base}><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 9.5z" /></svg>
+)

@@ -4,7 +4,7 @@ export interface CriteresTirage {
   nombre: number
   tags?: string[]
   tempsMax?: number
-  exclureIds?: number[]
+  exclureIds?: string[]
   recenteJours?: number
   maintenant?: number
   rng?: () => number
@@ -26,7 +26,7 @@ export function tirer(recettes: Recette[], c: CriteresTirage): Recette[] {
   const maintenant = c.maintenant ?? Date.now()
   const eligibles = recettes.filter(
     (r) =>
-      !exclureIds.includes(r.id!) &&
+      !exclureIds.includes(r.id) &&
       tags.every((t) => r.tags.includes(t)) &&
       (tempsMax === undefined || r.tempsMinutes === undefined || r.tempsMinutes <= tempsMax),
   )
@@ -40,13 +40,13 @@ export function tirer(recettes: Recette[], c: CriteresTirage): Recette[] {
 export function relancer(
   recettes: Recette[],
   selection: Recette[],
-  id: number,
+  id: string,
   c: Omit<CriteresTirage, 'nombre'> = {},
 ): Recette[] {
   const [remplacante] = tirer(recettes, {
     ...c,
     nombre: 1,
-    exclureIds: [...(c.exclureIds ?? []), ...selection.map((r) => r.id!)],
+    exclureIds: [...(c.exclureIds ?? []), ...selection.map((r) => r.id)],
   })
   return remplacante ? selection.map((r) => (r.id === id ? remplacante : r)) : selection
 }

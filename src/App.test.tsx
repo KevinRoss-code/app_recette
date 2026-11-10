@@ -108,3 +108,9 @@ test('fiche recette : étapes visibles, quantités selon les portions, depuis la
     expect(screen.getByText('100 g farine')).toBeTruthy()
   })
 })
+
+test('onglet Compte : message clair quand la synchronisation n\'est pas configurée', async () => {
+  render(<App />)
+  fireEvent.click(screen.getByText('Compte'))
+  await screen.findByText(/n'est pas configurée/)
+})
