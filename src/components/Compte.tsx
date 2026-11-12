@@ -19,6 +19,7 @@ export default function Compte() {
   const [mdp, setMdp] = useState('')
   const [erreur, setErreur] = useState('')
   const [occupe, setOccupe] = useState(false)
+  const [rapport, setRapport] = useState<string[]>([])
   const nbRecettes = useLiveQuery(async () => (await lister()).length, [], 0)
 
   async function agir(action: (e: string, m: string) => Promise<void>) {
@@ -71,6 +72,17 @@ export default function Compte() {
             <button type="button" disabled={occupe || !email || mdp.length < 6} onClick={() => void agir(cloud.creerCompte)}>Créer le compte</button>
           </div>
         </form>
+      )}
+      {cloud.email && (
+        <div className="carte">
+          <div className="actions">
+            <button disabled={occupe} onClick={async () => {
+              setOccupe(true)
+              try { setRapport(await cloud.diagnostic()) } catch (e) { setRapport([`Erreur : ${(e as Error).message}`]) } finally { setOccupe(false) }
+            }}>Diagnostic</button>
+          </div>
+          {rapport.length > 0 && <pre className="rapport">{rapport.join('\n')}</pre>}
+        </div>
       )}
       <p className="meta">Version {__BUILD__}</p>
     </section>

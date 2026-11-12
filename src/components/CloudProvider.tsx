@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { backendSupabase, cloudConfigure, supabase } from '../data/cloud'
+import { backendSupabase, cloudConfigure, diagnostiquer, supabase } from '../data/cloud'
 import { db } from '../data/db'
 import { applicationEnCours, reinitialiserSynchro, synchroniser, type Bilan } from '../data/sync'
 
@@ -16,6 +16,7 @@ interface Cloud {
   connecter: (email: string, mdp: string) => Promise<void>
   creerCompte: (email: string, mdp: string) => Promise<void>
   deconnecter: () => Promise<void>
+  diagnostic: () => Promise<string[]>
 }
 
 const Ctx = createContext<Cloud | null>(null)
@@ -108,8 +109,18 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     await supabase!.auth.signOut()
   }
 
+  async function diagnostic() {
+    const actifs = (t: { filter: (f: (x: { deletedAt?: number }) => boolean) => { count: () => Promise<number> } }) =>
+      t.filter((x) => !x.deletedAt).count()
+    const locales = {
+      recettes: await actifs(db.recettes), menu: await actifs(db.menu),
+      articles: await actifs(db.articles), coches: await actifs(db.coches),
+    }
+    return diagnostiquer(supabase!, locales)
+  }
+
   return (
-    <Ctx.Provider value={{ etat, email: session?.user.email, derniere, bilan, message, synchroniserMaintenant, connecter, creerCompte, deconnecter }}>
+    <Ctx.Provider value={{ etat, email: session?.user.email, derniere, bilan, message, synchroniserMaintenant, connecter, creerCompte, deconnecter, diagnostic }}>
       {children}
     </Ctx.Provider>
   )

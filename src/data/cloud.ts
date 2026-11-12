@@ -42,3 +42,29 @@ export function backendSupabase(client: SupabaseClient): Backend {
     },
   }
 }
+
+export async function diagnostiquer(client: SupabaseClient, locales: Record<string, number>): Promise<string[]> {
+  const lignes: string[] = []
+  const { data: s } = await client.auth.getSession()
+  lignes.push(s.session ? `Session : ${s.session.user.email} (id ${s.session.user.id.slice(0, 8)}…)` : 'Session : aucune')
+  lignes.push(`Sur cet appareil : ${Object.entries(locales).map(([k, v]) => `${k} ${v}`).join(', ')}`)
+
+  const lu = await client.from('sync_rows').select('tbl')
+  if (lu.error) lignes.push(`Lecture serveur : ERREUR ${lu.error.message}`)
+  else {
+    const n: Record<string, number> = {}
+    for (const r of lu.data as { tbl: string }[]) n[r.tbl] = (n[r.tbl] ?? 0) + 1
+    const txt = Object.entries(n).map(([k, v]) => `${k} ${v}`).join(', ')
+    lignes.push(`Sur le serveur (ce compte) : ${txt || 'aucune ligne'}`)
+  }
+
+  const t = Date.now()
+  const ecrit = await client.rpc('push_rows', { rows: [{ tbl: 'diagnostic', id: 'test', data: { updatedAt: t }, updated_at: t }] })
+  if (ecrit.error) lignes.push(`Écriture serveur : ERREUR ${ecrit.error.message}`)
+  else {
+    const relu = await client.from('sync_rows').select('id').eq('tbl', 'diagnostic')
+    lignes.push(relu.error ? `Relecture : ERREUR ${relu.error.message}` : `Écriture serveur : ${relu.data.length ? 'OK' : 'ÉCHEC silencieux (0 ligne relue)'}`)
+    await client.from('sync_rows').delete().eq('tbl', 'diagnostic')
+  }
+  return lignes
+}
