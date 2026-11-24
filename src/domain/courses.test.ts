@@ -25,6 +25,16 @@ describe('agreger', () => {
   test('insensible aux accents et à la casse', () => {
     expect(cleArticle('Crème', 'G')).toBe(cleArticle('creme ', 'g'))
   })
+  test('pluriel et singulier, œ/oe fusionnent', () => {
+    expect(cleArticle('oignon', '')).toBe(cleArticle('Oignons', ''))
+    expect(cleArticle('chou', '')).toBe(cleArticle('choux', ''))
+    expect(cleArticle('œufs', '')).toBe(cleArticle('oeuf', ''))
+    expect(cleArticle('pommes de terre', 'g')).toBe(cleArticle('pomme de terre', 'g'))
+    expect(cleArticle('riz', 'g')).not.toBe(cleArticle('pâtes', 'g'))
+    const res = agreger([{ recette: rec(1, [ing('oignon', 1, ''), ing('oignons', 2, '')]), portions: 1 }])
+    expect(res).toHaveLength(1)
+    expect(res[0].quantite).toBe(3)
+  })
   test('arrondit à 2 décimales', () => {
     const res = agreger([{ recette: rec(3, [ing('x', 1)]), portions: 1 }])
     expect(res[0].quantite).toBe(0.33)

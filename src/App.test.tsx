@@ -114,3 +114,28 @@ test('onglet Compte : message clair quand la synchronisation n\'est pas configur
   fireEvent.click(screen.getByText('Compte'))
   await screen.findByText(/n'est pas configurée/)
 })
+
+test('recherche : filtre par titre ou tag, sans accent ni casse', async () => {
+  const nouv = (titre: string, tags: string[]) => ({ titre, portions: 4, ingredients: [], etapes: [], tags })
+  await creer(nouv('Gratin de courge', ['automne', 'soir']))
+  await creer(nouv('Salade de crevettes', ['été', 'midi']))
+  render(<App />)
+  fireEvent.click(screen.getByText('Recettes'))
+  await screen.findByText('Gratin de courge')
+  fireEvent.change(screen.getByLabelText('Rechercher une recette'), { target: { value: 'ÉTÉ' } })
+  await screen.findByText('1 sur 2 recette(s)')
+  expect(screen.queryByText('Gratin de courge')).toBeNull()
+  fireEvent.change(screen.getByLabelText('Rechercher une recette'), { target: { value: 'courge' } })
+  await screen.findByText('Gratin de courge')
+  expect(screen.queryByText('Salade de crevettes')).toBeNull()
+})
+
+test('bouton « Charger les recettes de départ » : 500 recettes ajoutées puis recherche par saison', async () => {
+  render(<App />)
+  fireEvent.click(screen.getByText('Recettes'))
+  fireEvent.click(await screen.findByText('Charger les recettes de départ'))
+  await screen.findByText('500 recette(s) ajoutée(s)', {}, { timeout: 15000 })
+  await screen.findByText('500 recette(s)')
+  fireEvent.change(screen.getByLabelText('Rechercher une recette'), { target: { value: 'hiver' } })
+  await screen.findByText('125 sur 500 recette(s)')
+}, 30000)

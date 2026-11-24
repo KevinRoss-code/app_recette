@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { creer, exporterJson, importerJson, lister, modifier, supprimer } from '../data/recettes'
+import { chargerRecettesDepart, creer, exporterJson, importerJson, lister, modifier, supprimer } from '../data/recettes'
 import type { Recette } from '../domain/types'
 import RecetteForm from './RecetteForm'
 
@@ -9,6 +9,8 @@ export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
   const recettes = useLiveQuery(lister, [], [] as Recette[])
   const [edition, setEdition] = useState<Recette | 'nouvelle' | null>(null)
   const [message, setMessage] = useState('')
+  const [recherche, setRecherche] = useState('')
+  const [chargement, setChargement] = useState(false)
 
   async function exporter() {
     if (Capacitor.isNativePlatform()) {
@@ -20,6 +22,18 @@ export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
     const url = URL.createObjectURL(new Blob([await exporterJson()], { type: 'application/json' }))
     Object.assign(document.createElement('a'), { href: url, download: 'recettes.json' }).click()
     URL.revokeObjectURL(url)
+  }
+
+  async function chargerDepart() {
+    setChargement(true)
+    try {
+      const { ajoutees, dejaPresentes } = await chargerRecettesDepart()
+      setMessage(`${ajoutees} recette(s) ajoutée(s)${dejaPresentes ? `, ${dejaPresentes} déjà présente(s)` : ''}`)
+    } catch (e) {
+      setMessage((e as Error).message)
+    } finally {
+      setChargement(false)
+    }
   }
 
   async function importer(file?: File) {
@@ -45,6 +59,10 @@ export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
     )
   }
 
+  const norme = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  const q = norme(recherche.trim())
+  const affichees = q ? recettes.filter((r) => norme(`${r.titre} ${r.tags.join(' ')}`).includes(q)) : recettes
+
   return (
     <section>
       <h2>Mes recettes</h2>
@@ -52,11 +70,18 @@ export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
         <button className="primary" onClick={() => setEdition('nouvelle')}>+ Nouvelle recette</button>
         <button className="petit" onClick={exporter}>Exporter</button>
         <label className="btn petit">Importer<input type="file" accept="application/json" hidden onChange={(e) => importer(e.target.files?.[0])} /></label>
+        <button className="petit" disabled={chargement} onClick={chargerDepart}>{chargement ? 'Chargement…' : 'Charger les recettes de départ'}</button>
       </div>
       {message && <p className="meta" role="status">{message}</p>}
-      {recettes.length === 0 && <div className="vide"><span>📖</span>Aucune recette : ajoutez-en une pour commencer.</div>}
+      {recettes.length === 0 && <div className="vide"><span>📖</span>Aucune recette : ajoutez-en une, ou chargez les recettes de départ.</div>}
+      {recettes.length > 0 && (
+        <>
+          <input type="search" aria-label="Rechercher une recette" placeholder="Rechercher (titre ou tag)" value={recherche} onChange={(e) => setRecherche(e.target.value)} style={{ width: '100%' }} />
+          <p className="meta">{q ? `${affichees.length} sur ${recettes.length} recette(s)` : `${recettes.length} recette(s)`}</p>
+        </>
+      )}
       <ul className="liste">
-        {recettes.map((r) => (
+        {affichees.map((r) => (
           <li key={r.id}>
             <span>
               <button className="lien" onClick={() => onVoir(r)}><strong>{r.titre}</strong></button>

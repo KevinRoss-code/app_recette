@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { db } from './db'
-import { creer, exporterJson, importerJson, lire, lister, marquerTirees, modifier, supprimer } from './recettes'
+import { chargerRecettesDepart, creer, exporterJson, importerJson, lire, lister, marquerTirees, modifier, supprimer } from './recettes'
 import type { NouvelleRecette } from '../domain/types'
 
 const base: NouvelleRecette = {
@@ -56,5 +56,22 @@ describe('marquerTirees', () => {
     const id = await creer(base)
     await marquerTirees([id], 123)
     expect((await lire(id))?.dernierTirage).toBe(123)
+  })
+})
+
+describe('chargerRecettesDepart', () => {
+  const depart = [base, { ...base, titre: 'Gratin de courge' }, { ...base, titre: 'gratin de courge ' }]
+  test('ajoute sans doublon et reste idempotent', async () => {
+    const source = async () => ({ default: depart })
+    expect(await chargerRecettesDepart(source)).toEqual({ ajoutees: 2, dejaPresentes: 1 })
+    expect((await lister()).map((r) => r.titre).sort()).toEqual(['Gratin de courge', 'Pâtes tomate'])
+    expect(await chargerRecettesDepart(source)).toEqual({ ajoutees: 0, dejaPresentes: 3 })
+    expect(await db.recettes.count()).toBe(2)
+  })
+  test('ne touche pas aux recettes existantes de l\'utilisateur', async () => {
+    const id = await creer({ ...base, titre: 'Pâtes Tomate', etapes: ['Ma version'] })
+    await chargerRecettesDepart(async () => ({ default: [base] }))
+    expect((await lire(id))?.etapes).toEqual(['Ma version'])
+    expect(await db.recettes.count()).toBe(1)
   })
 })

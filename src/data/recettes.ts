@@ -61,3 +61,22 @@ export async function marquerTirees(ids: string[], quand = maintenant()): Promis
   const t = maintenant()
   await db.recettes.bulkUpdate(ids.map((key) => ({ key, changes: { dernierTirage: quand, updatedAt: t } })))
 }
+
+const titreNormalise = (t: string) =>
+  t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+
+type SourceDepart = () => Promise<{ default: NouvelleRecette[] }>
+
+export async function chargerRecettesDepart(
+  source: SourceDepart = () => import('./recettes-depart.json') as unknown as Promise<{ default: NouvelleRecette[] }>,
+): Promise<{ ajoutees: number; dejaPresentes: number }> {
+  const { default: depart } = await source()
+  const vus = new Set((await lister()).map((r) => titreNormalise(r.titre)))
+  const nouvelles = depart.filter((r) => {
+    const k = titreNormalise(r.titre)
+    return !vus.has(k) && vus.add(k)
+  })
+  const t = maintenant()
+  await db.recettes.bulkAdd(nouvelles.map((r) => ({ ...r, id: uuid(), updatedAt: t })))
+  return { ajoutees: nouvelles.length, dejaPresentes: depart.length - nouvelles.length }
+}

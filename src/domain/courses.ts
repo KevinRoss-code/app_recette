@@ -6,9 +6,11 @@ export interface LigneCourses extends Ingredient {
 }
 
 const norme = (s: string) =>
-  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, ' ')
+  s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/œ/g, 'oe').replace(/æ/g, 'ae').trim().replace(/\s+/g, ' ')
 
-export const cleArticle = (nom: string, unite: string) => `${norme(nom)}|${norme(unite)}`
+const singulier = (s: string) => s.replace(/(\p{L}{3,}?)[sx](?=\s|$)/gu, '$1')
+
+export const cleArticle = (nom: string, unite: string) => `${singulier(norme(nom))}|${norme(unite)}`
 const arrondi = (n: number) => Math.round(n * 100) / 100
 
 export function agreger(menu: { recette: Recette; portions: number }[], manuels: Ingredient[] = []): LigneCourses[] {
