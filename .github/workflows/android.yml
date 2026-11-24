@@ -65,7 +65,14 @@ jobs:
           echo
           grep -nE "^e: |error:|Caused by|FAILED|Could not" "$f" | head -6 | cut -c1-300 | sed 's/^/::error::/'
       - name: Rename APK
-        run: cp android/app/build/outputs/apk/release/app-release.apk carnet-recettes.apk
+        run: |
+          apk=$(find android/app/build/outputs -name '*.apk' | head -1)
+          if [ -z "$apk" ]; then
+            echo "::error::Aucun APK produit. Fichiers : $(find android/app/build/outputs -type f | head -10 | tr '\n' ' ')"; exit 1
+          fi
+          case "$apk" in *unsigned*) echo "::error::APK non signé ($apk) : la signature n'a pas été appliquée"; exit 1;; esac
+          echo "APK : $apk ($(du -h "$apk" | cut -f1))"
+          cp "$apk" carnet-recettes.apk
       - uses: actions/upload-artifact@v4
         with:
           name: carnet-recettes-apk
