@@ -3,12 +3,12 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default defineConfig({
-  base: '/app_recette/',
+export default defineConfig(({ mode }) => ({
+  base: mode === 'android' ? './' : '/app_recette/',
   define: { __BUILD__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')) },
   plugins: [
     react(),
-    VitePWA({
+    mode !== 'android' && VitePWA({
       registerType: 'autoUpdate',
       manifest: {
         name: 'Carnet de recettes',
@@ -25,4 +25,4 @@ export default defineConfig({
     }),
   ],
   test: { environment: 'node', setupFiles: ['./src/test-setup.ts'] },
-})
+}))

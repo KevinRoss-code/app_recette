@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { creer, exporterJson, importerJson, lister, modifier, supprimer } from '../data/recettes'
 import type { Recette } from '../domain/types'
@@ -10,6 +11,12 @@ export default function Recettes({ onVoir }: { onVoir: (r: Recette) => void }) {
   const [message, setMessage] = useState('')
 
   async function exporter() {
+    if (Capacitor.isNativePlatform()) {
+      const [{ Filesystem, Directory, Encoding }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')])
+      const { uri } = await Filesystem.writeFile({ path: 'recettes.json', data: await exporterJson(), directory: Directory.Cache, encoding: Encoding.UTF8 })
+      await Share.share({ title: 'Mes recettes', files: [uri] })
+      return
+    }
     const url = URL.createObjectURL(new Blob([await exporterJson()], { type: 'application/json' }))
     Object.assign(document.createElement('a'), { href: url, download: 'recettes.json' }).click()
     URL.revokeObjectURL(url)
