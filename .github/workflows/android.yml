@@ -38,16 +38,15 @@ jobs:
           if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
             echo "::error::Secrets KEYSTORE_BASE64 et KEYSTORE_PASSWORD manquants (voir README, section Android)"; exit 1
           fi
-          printf '%s' "$KEYSTORE_BASE64" | tr -d ' \r\n\t' > "$RUNNER_TEMP/ks.b64"
+          brut=$(printf '%s' "$KEYSTORE_BASE64" | wc -c)
+          printf '%s' "$KEYSTORE_BASE64" | tr -cd 'A-Za-z0-9+/=' > "$RUNNER_TEMP/ks.b64"
           n=$(wc -c < "$RUNNER_TEMP/ks.b64")
-          if ! grep -Eq '^[A-Za-z0-9+/]+=*$' "$RUNNER_TEMP/ks.b64"; then
-            echo "::error::KEYSTORE_BASE64 contient des caractères qui ne sont pas du base64 (longueur $n, attendu 3532). Recopiez tout le contenu de carnet.keystore.b64, rien d'autre."; exit 1
-          fi
+          echo "Secret KEYSTORE_BASE64 : $brut caractères reçus, $n après nettoyage (attendu 3532)"
           if ! base64 -d "$RUNNER_TEMP/ks.b64" > android/app/carnet.keystore 2>/dev/null; then
-            echo "::error::KEYSTORE_BASE64 n'est pas décodable (longueur $n, attendu 3532) : contenu tronqué ou incomplet."; exit 1
+            echo "::error::KEYSTORE_BASE64 n'est pas décodable ($brut reçus, $n après nettoyage, attendu 3532) : contenu tronqué ou incomplet."; exit 1
           fi
           if ! keytool -list -keystore android/app/carnet.keystore -storepass "$KEYSTORE_PASSWORD" -alias carnet > "$RUNNER_TEMP/kt.out" 2>&1; then
-            echo "::error::Clé décodée (longueur $n) mais illisible ou mot de passe incorrect : $(head -c 150 "$RUNNER_TEMP/kt.out")"; exit 1
+            echo "::error::Clé décodée ($brut reçus, $n après nettoyage, attendu 3532) mais illisible ou mot de passe incorrect : $(head -c 150 "$RUNNER_TEMP/kt.out")"; exit 1
           fi
           echo "Clé de signature valide (alias carnet)"
       - name: Assemble release APK
