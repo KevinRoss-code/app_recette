@@ -55,7 +55,15 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           VERSION_CODE: ${{ github.run_number }}
           VERSION_NAME: 1.${{ github.run_number }}
-        run: chmod +x gradlew && ./gradlew assembleRelease --no-daemon
+        run: chmod +x gradlew && ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee "$RUNNER_TEMP/gradle.log"
+      - name: Résumé de l'échec Gradle
+        if: failure()
+        run: |
+          f="$RUNNER_TEMP/gradle.log"
+          [ -f "$f" ] || exit 0
+          awk '/What went wrong/{p=1;c=0} p&&c<8{print;c++}' "$f" | tr '\n' ' ' | cut -c1-700 | sed 's/^/::error::/'
+          echo
+          grep -nE "^e: |error:|Caused by|FAILED|Could not" "$f" | head -6 | cut -c1-300 | sed 's/^/::error::/'
       - name: Rename APK
         run: cp android/app/build/outputs/apk/release/app-release.apk carnet-recettes.apk
       - uses: actions/upload-artifact@v4
